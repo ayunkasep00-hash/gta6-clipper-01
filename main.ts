@@ -15,7 +15,17 @@ if (typeof url !== "string" || !/^https:\/\/(www\.)?(youtube\.com|youtu\.be)\//.
   throw new Error("VIDEO.json url must be a YouTube address");
 }
 
+// Extract the 11-character YouTube video ID (shorts/<id>, watch?v=<id>,
+// youtu.be/<id>) and reject anything that does not carry a valid one.
+const videoIdMatch: RegExpMatchArray | null = url.match(
+  /(?:shorts\/|watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})(?:[?&#]|$)/,
+);
+if (!videoIdMatch) {
+  throw new Error("VIDEO.json url must contain an 11-character YouTube video ID");
+}
+const videoId: string = videoIdMatch[1];
+
 const outDir: string = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
 fs.mkdirSync(outDir, { recursive: true });
 fs.copyFileSync(videoPath, path.join(outDir, "VIDEO.json"));
-console.log(`Wrote VIDEO.json to ${outDir} (${url})`);
+console.log(`OK: validated YouTube video ${videoId} and wrote VIDEO.json to ${outDir} (${url})`);
